@@ -42,7 +42,7 @@ router.post('/login', async function (req, res) {
         if (password !== user.password) {
             return res.json({message: "Parol noto'g'ri", accsess: 0})
         }
-        return res.json({message: 'success', accsess: 1})
+        return res.json({message: 'success', accsess: 1, username})
     } catch (e) {
         res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
