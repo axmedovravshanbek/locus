@@ -33,22 +33,20 @@ const generateToken = (id, roles) => {
 // });
 router.post('/login', async function (req, res) {
     try {
+        console.log(req.body);
         const {username, password} = req.body;
         const user = await User.findOne({username});
         if (!user) {
-            return res.status(400).json({message: 'bunday odam yoq'})
+            return res.json({message: 'Bunday foydalanuvchi mavjud emas', accsess: 0})
         }
         if (password !== user.password) {
-            return res.status(400).json({message: 'parol xata'})
+            return res.json({message: "Parol noto'g'ri", accsess: 0})
         }
-        return res.status(200).json({message: 'kirovr'})
-        // const token = generateToken(user._id, user.roles);
-        // return res.json({token})
+        return res.json({message: 'success', accsess: 1})
     } catch (e) {
-        res.status(400).json({message: 'catch error'})
+        res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
     }
-    // res.json({message: 'login'})
 });
 router.get('/get', async function (req, res) {
     try {
