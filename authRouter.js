@@ -1,61 +1,36 @@
 const Router = require('express');
 const router = new Router();
+const axios = require('axios');
 const {User, Bill} = require('./models');
-router.post('/login', async function (req, res) {
+
+router.get('/axios', async function (req, res) {
     try {
-        const {username, password} = req.body;
-        const user = await User.findOne({username});
-        if (!user) {
-            return res.json({message: 'Bunday foydalanuvchi mavjud emas', accsess: 0})
-        }
-        if (password !== user.password) {
-            return res.json({message: "Parol noto'g'ri", accsess: 0})
-        }
-        return res.json({message: 'success', accsess: 1, username})
+        axios.get('https://jsonplaceholder.typicode.com/todos/1')
+            .then(response => console.log(response.data.title));
+        res.json('axios')
     } catch (e) {
-        res.status(200).json({message: 'catch error', accsess: 0});
+        console.log(e)
+
+    }
+});
+router.get('/edit', async function (req, res) {
+    try {
+        await User.updateMany({}, {token: ''}, {upsert: true});
+        res.json('user')
+    } catch (e) {
         console.log(e)
     }
 });
-router.post('/add', async function (req, res) {
+router.get('/clear', async function (req, res) {
     try {
-        const {data, reason, date} = req.body;
-        for (const item of data) {
-            await User.updateOne({username: item.username}, {$inc: {bill: item.amount}})
-        }
-        // await Bill.updateOne({}, {$push: {members: 'dcsdcsdcsd'}});
-        await Bill.updateOne({}, {
-            $push: {
-                members: {
-                    reason: reason,
-                    date: date,
-                    members: data.map((item) => {
-                        return {
-                            user: item.username,
-                            count: item.amount
-                        }
-                    })
-                }
-            }
-        });
-        const bills = await Bill.find();
-        // var bill = new Bill({
-        //     members: data.map((item) => {
-        //         return [{
-        //             user: item.username,
-        //             count: item.amount
-        //         }]
-        //     },
-        // });
-        // console.log(bill);
-        // await bill.save();
-        res.json(bills)
+        await User.updateMany({}, {bill: 0});
+        res.json('000')
     } catch (e) {
-        res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
     }
 });
-router.get('/get', async function (req, res) {
+
+router.get('/get/users', async function (req, res) {
     try {
         const users = await User.find();
         res.json(users)
@@ -64,7 +39,7 @@ router.get('/get', async function (req, res) {
 
     }
 });
-router.get('/bills', async function (req, res) {
+router.get('/get/bills', async function (req, res) {
     try {
         const bills = await Bill.find();
         res.json(bills)
@@ -73,30 +48,78 @@ router.get('/bills', async function (req, res) {
 
     }
 });
-router.get('/qosh', async function (req, res) {
+router.get('/chart/pie', async function (req, res) {
     try {
-        const user = User({
-            username: 's',
-            password: 's',
-            image: 'Comeback'
-        });
-        user.save();
-        res.json(user)
+        const d = await Bill.aggregate([
+            {
+                $group: {
+                    _id: "$user",
+                    summ: {$sum: "$money"},
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {summ: 1}
+            }
+        ]);
+        res.json(d)
     } catch (e) {
         console.log(e)
     }
 });
-router.get('/demo', async function (req, res) {
+router.post('/chart/line', async function (req, res) {
     try {
-        await User.updateMany({}, {bill: 0});
-        // const s = new Bill({
-        //     members: {sca: 'dcsdcsdcsd'}
-        // });
-        // const us = await Bill.find()
-        // s.save();
-        res.json('us')
+        const {fromDate, toDate} = req.body;
+        const d = await Bill.aggregate([
+            {
+                $match: {"date": {$gte: new Date(fromDate), $lt: new Date(toDate)}}
+            },
+            {
+                $group: {
+                    _id: {$dateToString: {format: "%Y-%m-%d", date: "$date"}},
+                    summ: {$sum: "$money"},
+                    count: {$sum: 1}
+                }
+            },
+            {
+                $sort: {_id: 1}
+            }
+        ]);
+        res.json(d)
     } catch (e) {
         console.log(e)
     }
+});
+router.post('/add/bill', async function (req, res) {
+    try {
+        const {sum, reason, date, user, members} = req.body;
+        for (const member of members) {
+            await User.updateOne({username: member}, {$inc: {bill: sum / members.length}})
+        }
+        await User.updateOne({username: user}, {$inc: {bill: -sum}});
+        const bill = Bill({
+            user,
+            money: sum,
+            date: new Date(date),
+            members,
+            reason
+        });
+        await bill.save();
+        const bills = await Bill.find();
+        res.json(bills)
+    } catch (e) {
+        res.status(200).json({message: 'catch error', accsess: 0});
+        console.log(e)
+    }
+});
+router.post('/set/token', async function (req, res) {
+    const {name, token} = req.body;
+    const user = await User.findOne({username: name});
+    if (!user) {
+        return res.json({message: 'Bunday foydalanuvchi mavjud emas'})
+    } else {
+        await User.updateOne({username: name}, {token})
+    }
+    return res.json({message: 'success', accsess: 1, username})
 });
 module.exports = router;
