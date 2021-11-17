@@ -127,4 +127,12 @@ router.post('/login', async function (req, res) {
     }
     res.status(500).json({message: 'login'})
 });
+router.post('/test', async function (req, res) {
+    try {
+        return res.status(202).json({message: 'req.body', user: req.body, accsess: true})
+    } catch (e) {
+        console.log(e)
+    }
+    res.status(500).json({message: 'login'})
+});
 module.exports = router;
