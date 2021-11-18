@@ -130,7 +130,7 @@ router.post('/add/bill', async function (req, res) {
     try {
         const {sum, reason, date, user, members} = req.body;
         for (const member of members) {
-            await User.updateOne({username: member}, {$inc: {bill: (sum/members.length)}})
+            await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum/members.length)}})
         }
         await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
