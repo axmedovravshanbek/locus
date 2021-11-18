@@ -1,6 +1,7 @@
 const Router = require('express');
 const router = new Router();
 const {User, Bill} = require('./models');
+const axios = require('axios');
 
 router.get('/edit', async function (req, res) {
     try {
@@ -14,6 +15,34 @@ router.get('/clear', async function (req, res) {
     try {
         await User.updateMany({}, {bill: 0});
         res.json('000')
+    } catch (e) {
+        console.log(e)
+    }
+});
+router.get('/axios', async function (req, res) {
+    try {
+        axios.post('https://fcm.googleapis.com/fcm/send',
+            {
+                "to": "flYleYH4T9qWKCYB9CyrfC:APA91bH8jw2QRuUKDgBLQbXKMLrcPjJY9tP0P_jHp4TUcG9NFu7IOaKwD1w2Yh7-Rzs3AbBJCVSlGjOulVluR7xO_YtJIiXqAzRLUV26W3k_Tpk2T74dojQmyJ54pCKEjGwb-3lDmkC8",
+                "priority": "high",
+                "notification": {
+                    "title": "Your Title1",
+                    "text": "Your Text1",
+                    "body": "Your Text3"
+                },
+                "data": {
+                    "customId": "02",
+                    "badge": 1,
+                    "sound": "",
+                    "alert": "Alert"
+                }
+            },
+            {
+                headers: {
+                    'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
+                }
+            }
+        );
     } catch (e) {
         console.log(e)
     }
@@ -39,7 +68,7 @@ router.get('/get/bills', async function (req, res) {
 });
 router.post('/chart/pie', async function (req, res) {
     try {
-        var d={};
+        var d = {};
         const today = Date.now();
         const {type} = req.body;
         if (type !== 0)
@@ -101,7 +130,7 @@ router.post('/add/bill', async function (req, res) {
     try {
         const {sum, reason, date, user, members} = req.body;
         for (const member of members) {
-            await User.updateOne({username: member}, {$inc: {bill: sum / members.length}})
+            await User.updateOne({username: member}, {$inc: {bill: (sum/members.length)}})
         }
         await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
@@ -112,7 +141,13 @@ router.post('/add/bill', async function (req, res) {
             reason
         });
         await bill.save();
-        res.json({accsess: true})
+        res.json({accsess: true});
+
+
+        for (const member of members) {
+            const user = await User.findOne({username: member})
+
+        }
     } catch (e) {
         res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
