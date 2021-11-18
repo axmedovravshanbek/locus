@@ -18,6 +18,7 @@ router.get('/clear', async function (req, res) {
         console.log(e)
     }
 });
+
 router.get('/get/users', async function (req, res) {
     try {
         const users = await User.find();
@@ -36,14 +37,17 @@ router.get('/get/bills', async function (req, res) {
 
     }
 });
-router.get('/chart/pie', async function (req, res) {
+router.post('/chart/pie', async function (req, res) {
     try {
+        const {fromDate, toDate} = req.body;
         const d = await Bill.aggregate([
+            {
+                $match: {"date": {$gte: new Date(fromDate), $lt: new Date(toDate)}}
+            },
             {
                 $group: {
                     _id: "$user",
                     summ: {$sum: "$money"},
-                    count: {$sum: 1}
                 }
             },
             {
@@ -80,36 +84,34 @@ router.post('/chart/line', async function (req, res) {
 });
 router.post('/add/bill', async function (req, res) {
     try {
-        // const {sum, reason, date, user, members} = req.body;
-        console.log(req.body);
-        // for (const member of members) {
-        //     await User.updateOne({username: member}, {$inc: {bill: sum / members.length}})
-        // }
-        // await User.updateOne({username: user}, {$inc: {bill: -sum}});
-        // const bill = Bill({
-        //     user,
-        //     money: sum,
-        //     date: new Date(date),
-        //     members,
-        //     reason
-        // });
-        // await bill.save();
-        // const bills = await Bill.find();
-        res.json("bills")
+        const {sum, reason, date, user, members} = req.body;
+        for (const member of members) {
+            await User.updateOne({username: member}, {$inc: {bill: sum / members.length}})
+        }
+        await User.updateOne({username: user}, {$inc: {bill: -sum}});
+        const bill = Bill({
+            user,
+            money: sum,
+            date: new Date(date),
+            members,
+            reason
+        });
+        await bill.save();
+        res.json({accsess:true})
     } catch (e) {
         res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
     }
 });
 router.post('/set/token', async function (req, res) {
-    const {name, token} = req.body;
-    const user = await User.findOne({username: name});
+    const {_id, token} = req.body;
+    const user = await User.findOne({_id});
     if (!user) {
-        return res.json({message: 'Bunday foydalanuvchi mavjud emas'})
+        return res.json({accsess: false})
     } else {
-        await User.updateOne({username: name}, {token})
+        await User.updateOne({_id}, {token})
     }
-    return res.json({message: 'success', accsess: 1, username})
+    return res.json({accsess: 1})
 });
 router.post('/login', async function (req, res) {
     try {
