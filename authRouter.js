@@ -39,21 +39,36 @@ router.get('/get/bills', async function (req, res) {
 });
 router.post('/chart/pie', async function (req, res) {
     try {
-        const {fromDate, toDate} = req.body;
-        const d = await Bill.aggregate([
-            {
-                $match: {"date": {$gte: new Date(fromDate), $lt: new Date(toDate)}}
-            },
-            {
-                $group: {
-                    _id: "$user",
-                    summ: {$sum: "$money"},
+        var d={};
+        const today = Date.now();
+        const {type} = req.body;
+        if (type !== 0)
+            d = await Bill.aggregate([
+                {
+                    $match: {"date": {$gte: new Date(today - (type * 86400000))}}
+                },
+                {
+                    $group: {
+                        _id: "$user",
+                        summ: {$sum: "$money"},
+                    }
+                },
+                {
+                    $sort: {summ: 1}
                 }
-            },
-            {
-                $sort: {summ: 1}
-            }
-        ]);
+            ]);
+        else
+            d = await Bill.aggregate([
+                {
+                    $group: {
+                        _id: "$user",
+                        summ: {$sum: "$money"},
+                    }
+                },
+                {
+                    $sort: {summ: 1}
+                }
+            ]);
         res.json(d)
     } catch (e) {
         console.log(e)
@@ -97,7 +112,7 @@ router.post('/add/bill', async function (req, res) {
             reason
         });
         await bill.save();
-        res.json({accsess:true})
+        res.json({accsess: true})
     } catch (e) {
         res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
@@ -109,7 +124,7 @@ router.post('/set/token', async function (req, res) {
     if (!user) {
         return res.json({accsess: false})
     } else {
-        await User.updateOne({_id}, {token})
+        await User.updateOne({_id}, {token});
         return res.json({accsess: true})
     }
 });
