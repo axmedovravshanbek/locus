@@ -110,8 +110,8 @@ router.post('/set/token', async function (req, res) {
         return res.json({accsess: false})
     } else {
         await User.updateOne({_id}, {token})
+        return res.json({accsess: true})
     }
-    return res.json({accsess: 1})
 });
 router.post('/login', async function (req, res) {
     try {
