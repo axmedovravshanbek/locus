@@ -23,18 +23,11 @@ router.get('/axios', async function (req, res) {
     try {
         axios.post('https://fcm.googleapis.com/fcm/send',
             {
-                "to": "flYleYH4T9qWKCYB9CyrfC:APA91bH8jw2QRuUKDgBLQbXKMLrcPjJY9tP0P_jHp4TUcG9NFu7IOaKwD1w2Yh7-Rzs3AbBJCVSlGjOulVluR7xO_YtJIiXqAzRLUV26W3k_Tpk2T74dojQmyJ54pCKEjGwb-3lDmkC8",
-                "priority": "high",
-                "notification": {
-                    "title": "Your Title1",
-                    "text": "Your Text1",
-                    "body": "Your Text3"
-                },
-                "data": {
-                    "customId": "02",
-                    "badge": 1,
-                    "sound": "",
-                    "alert": "Alert"
+                to: "c8JW7kbhTbyyOWJWK_iJsm:APA91bGUZYZE4SgVvgTFx8E_-R35zcWyRBzzQ4g0EhF9Gl1RO-U5CUbtxOiIfi36BNggONqlxcDE8yL2dCJSUWTSL_nhFLyNQNZcIOutDKrUc7vBfLbxxbIlJH462zyab7P0wjh5rgpE",
+                priority: "high",
+                notification: {
+                    title: "aaaaaaaaaaa",
+                    body: "cccccccccccc"
                 }
             },
             {
@@ -42,7 +35,8 @@ router.get('/axios', async function (req, res) {
                     'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
                 }
             }
-        );
+        ).then(resp => res.json(resp.data))
+            .catch(err => res.json("err"));
     } catch (e) {
         console.log(e)
     }
@@ -130,7 +124,25 @@ router.post('/add/bill', async function (req, res) {
     try {
         const {sum, reason, date, user, members} = req.body;
         for (const member of members) {
-            await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum/members.length)}})
+            await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum / members.length)}})
+        }
+        const users = await User.find({username: {$in: members}});
+        for (userr of users) {
+            axios.post('https://fcm.googleapis.com/fcm/send',
+                {
+                    to: userr.token,
+                    priority: "high",
+                    notification: {
+                        title: `${user} ${reason}ga ${sum} ishlatdi. ${members.length} odamga`,
+                        body: `Sanga (${userr.username}) ${Math.floor(sum / members.length)} so'm yozildi`
+                    }
+                },
+                {
+                    headers: {
+                        'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
+                    }
+                }
+            );
         }
         await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
@@ -144,10 +156,6 @@ router.post('/add/bill', async function (req, res) {
         res.json({accsess: true});
 
 
-        for (const member of members) {
-            const user = await User.findOne({username: member})
-
-        }
     } catch (e) {
         res.status(200).json({message: 'catch error', accsess: 0});
         console.log(e)
@@ -174,14 +182,6 @@ router.post('/login', async function (req, res) {
             return res.status(201).json({message: 'parol xata', accsess: false, user: {}})
         }
         return res.status(202).json({message: '', user: user, accsess: true})
-    } catch (e) {
-        console.log(e)
-    }
-    res.status(500).json({message: 'login'})
-});
-router.post('/test', async function (req, res) {
-    try {
-        return res.status(202).json({message: 'req.body', user: req.body, accsess: true})
     } catch (e) {
         console.log(e)
     }
