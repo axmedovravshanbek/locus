@@ -54,7 +54,7 @@ router.get('/get/users', async function (req, res) {
 router.get('/get/bills', async function (req, res) {
     try {
         const bills = await Bill.find();
-        res.json(bills)
+        res.json(bills.reverse())
     } catch (e) {
         console.log(e)
 
