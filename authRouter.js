@@ -137,7 +137,7 @@ router.post('/add/bill', async function (req, res) {
                     to: userr.token,
                     priority: "high",
                     notification: {
-                        title: `${user} ${reason}ga ${sum} ishlatdi. ${members.length} odamga`,
+                        title: `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`,
                         body: `Sanga (${userr.username}) ${Math.floor(sum / members.length)} so'm yozildi`
                     }
                 },
