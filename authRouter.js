@@ -21,6 +21,7 @@ router.get('/clear', async function (req, res) {
 });
 router.get('/axios', async function (req, res) {
     try {
+        console.log('keld');
         const hamma = await User.find({});
         for (userr of hamma) {
             axios.post('https://fcm.googleapis.com/fcm/send',
@@ -28,8 +29,8 @@ router.get('/axios', async function (req, res) {
                     to: userr.token,
                     priority: "high",
                     notification: {
-                        title: `Harajatlaringi kiritib qo'y`,
-                        body: `Tezroq`
+                        title: `Harajatlaringi kiritib qo'y ${userr.username}`,
+                        // body: `Tezroq`
                     }
                 },
                 {
@@ -39,6 +40,7 @@ router.get('/axios', async function (req, res) {
                 }
             );
         }
+        res.json("yubardim hammaga")
     } catch (e) {
         console.log(e)
     }
