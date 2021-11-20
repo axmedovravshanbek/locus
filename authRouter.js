@@ -21,7 +21,6 @@ router.get('/clear', async function (req, res) {
 });
 router.get('/axios', async function (req, res) {
     try {
-        console.log('keld');
         const hamma = await User.find({});
         for (userr of hamma) {
             axios.post('https://fcm.googleapis.com/fcm/send',
@@ -132,6 +131,7 @@ router.post('/add/bill', async function (req, res) {
         }
         const users = await User.find({username: {$in: members}});
         for (userr of users) {
+            if(user!==userr.username)
             axios.post('https://fcm.googleapis.com/fcm/send',
                 {
                     to: userr.token,
@@ -158,10 +158,8 @@ router.post('/add/bill', async function (req, res) {
         });
         await bill.save();
         res.json({accsess: true});
-
-
     } catch (e) {
-        res.status(200).json({message: 'catch error', accsess: 0});
+        res.status(200).json({message: 'catch error', accsess: false});
         console.log(e)
     }
 });
