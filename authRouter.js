@@ -21,22 +21,24 @@ router.get('/clear', async function (req, res) {
 });
 router.get('/axios', async function (req, res) {
     try {
-        axios.post('https://fcm.googleapis.com/fcm/send',
-            {
-                to: "c8JW7kbhTbyyOWJWK_iJsm:APA91bGUZYZE4SgVvgTFx8E_-R35zcWyRBzzQ4g0EhF9Gl1RO-U5CUbtxOiIfi36BNggONqlxcDE8yL2dCJSUWTSL_nhFLyNQNZcIOutDKrUc7vBfLbxxbIlJH462zyab7P0wjh5rgpE",
-                priority: "high",
-                notification: {
-                    title: "aaaaaaaaaaa",
-                    body: "cccccccccccc"
+        const hamma = await User.find({});
+        for (userr of hamma) {
+            axios.post('https://fcm.googleapis.com/fcm/send',
+                {
+                    to: userr.token,
+                    priority: "high",
+                    notification: {
+                        title: `Harajatlaringi kiritib qo'y`,
+                        body: `Tezroq`
+                    }
+                },
+                {
+                    headers: {
+                        'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
+                    }
                 }
-            },
-            {
-                headers: {
-                    'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
-                }
-            }
-        ).then(resp => res.json(resp.data))
-            .catch(err => res.json("err"));
+            );
+        }
     } catch (e) {
         console.log(e)
     }
