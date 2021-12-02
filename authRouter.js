@@ -3,22 +3,6 @@ const router = new Router();
 const {User, Bill} = require('./models');
 const axios = require('axios');
 
-router.get('/edit', async function (req, res) {
-    try {
-        await User.updateMany({}, {token: ''}, {upsert: true});
-        res.json('user')
-    } catch (e) {
-        console.log(e)
-    }
-});
-router.get('/clear', async function (req, res) {
-    try {
-        await User.updateMany({}, {bill: 0});
-        res.json('000')
-    } catch (e) {
-        console.log(e)
-    }
-});
 router.get('/axios', async function (req, res) {
     try {
         const hamma = await User.find({});
@@ -30,6 +14,12 @@ router.get('/axios', async function (req, res) {
                     notification: {
                         title: `Harajatlaringi kiritib qo'y ${userr.username}`,
                         // body: `Tezroq`
+                    },
+                    data: {
+                        customId: "02",
+                        badge: 1,
+                        sound: "",
+                        alert: "Alert"
                     }
                 },
                 {
@@ -176,6 +166,7 @@ router.post('/set/token', async function (req, res) {
 router.post('/login', async function (req, res) {
     try {
         const {username, password} = req.body;
+        console.log(username, password);
         const user = await User.findOne({username});
         if (!user) {
             return res.status(200).json({message: "bunday odam yo'q", accsess: false, user: {}})
