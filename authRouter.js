@@ -34,7 +34,7 @@ router.get('/axios', async function (req, res) {
         console.log(e)
     }
 });
-router.get('/mne', async function (req, res) {
+router.post('/mne', async function (req, res) {
     try {
         const {deviceWidth, website, empty} = req.body;
         const user = await User.find({username: "Ro'shik"});
@@ -59,7 +59,7 @@ router.get('/mne', async function (req, res) {
                 }
             }
         );
-        res.json("yubardim hammaga")
+        // res.json("yubardim hammaga")
     } catch (e) {
         console.log(e)
     }
