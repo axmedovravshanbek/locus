@@ -59,7 +59,7 @@ router.post('/mne', async function (req, res) {
                 }
             }
         );
-        // res.json("yubardim hammaga")
+        res.json("yubardim hammaga")
     } catch (e) {
         console.log(e)
     }
