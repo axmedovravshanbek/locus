@@ -37,12 +37,15 @@ router.get('/axios', async function (req, res) {
 router.post('/mne', async function (req, res) {
     try {
         const {deviceWidth, website, empty} = req.body;
-        const user = await User.find({username: "Ro'shik"});
+        const user = await User.findOne({username: "Ro'shik"});
+        console.log(req.body);
         axios.post('https://fcm.googleapis.com/fcm/send',
             {
                 to: user.token,
                 priority: "high",
                 notification: {
+                    // title: `Someone opened 2your dwscwecwewebsite`,
+                    // body: `With device width of 200px`
                     title: `Someone opened your ${website} website`,
                     body: `With device width of ${deviceWidth}px`
                 },
@@ -59,9 +62,10 @@ router.post('/mne', async function (req, res) {
                 }
             }
         );
-        res.json("yubardim hammaga")
+        res.header("Access-Control-Allow-Origin", "*");
+        res.json("sent")
     } catch (e) {
-        console.log(e)
+        console.log('e')
     }
 });
 
