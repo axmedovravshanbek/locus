@@ -34,6 +34,36 @@ router.get('/axios', async function (req, res) {
         console.log(e)
     }
 });
+router.get('/mne', async function (req, res) {
+    try {
+        const {deviceWidth, website, empty} = req.body;
+        const user = await User.find({username: "Ro'shik"});
+        axios.post('https://fcm.googleapis.com/fcm/send',
+            {
+                to: user.token,
+                priority: "high",
+                notification: {
+                    title: `Someone opened your ${website} website`,
+                    body: `With device width of ${deviceWidth}px`
+                },
+                data: {
+                    customId: "02",
+                    badge: 1,
+                    sound: "",
+                    alert: "Alert"
+                }
+            },
+            {
+                headers: {
+                    'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
+                }
+            }
+        );
+        res.json("yubardim hammaga")
+    } catch (e) {
+        console.log(e)
+    }
+});
 
 router.get('/get/users', async function (req, res) {
     try {
@@ -121,22 +151,22 @@ router.post('/add/bill', async function (req, res) {
         }
         const users = await User.find({username: {$in: members}});
         for (userr of users) {
-            if(user!==userr.username)
-            axios.post('https://fcm.googleapis.com/fcm/send',
-                {
-                    to: userr.token,
-                    priority: "high",
-                    notification: {
-                        title: `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`,
-                        body: `Sanga (${userr.username}) ${Math.floor(sum / members.length)} so'm yozildi`
+            if (user !== userr.username)
+                axios.post('https://fcm.googleapis.com/fcm/send',
+                    {
+                        to: userr.token,
+                        priority: "high",
+                        notification: {
+                            title: `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`,
+                            body: `Sanga (${userr.username}) ${Math.floor(sum / members.length)} so'm yozildi`
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
+                        }
                     }
-                },
-                {
-                    headers: {
-                        'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
-                    }
-                }
-            );
+                );
         }
         await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
