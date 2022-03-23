@@ -148,10 +148,9 @@ router.post('/chart/line', async function (req, res) {
 });
 router.post('/add/bill', async function (req, res) {
     try {
-        return res.json({access: true});
-/*        const {sum, reason, date, user, members} = req.body;
+        const {sum, reason, date, user, members} = req.body;
         for (const member of members) {
-            await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum / members.length)}})
+            await User.updateOne({username: member}, {$inc: {bill: Math.floor(parseInt(sum) / members.length)}})
         }
         const everyone = await User.find({username: {$in: members}});
         for (one of everyone) {
@@ -167,10 +166,10 @@ router.post('/add/bill', async function (req, res) {
             reason
         });
         await bill.save();
-        res.json({access: true});
-    */} catch (e) {
-        res.status(200).json({message: 'catch error', access: false});
-        console.log(e)
+        res.json({access: true})
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({message: 'error', access: false})
     }
 });
 router.post('/set/token', async function (req, res) {
