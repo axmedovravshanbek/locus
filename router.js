@@ -25,13 +25,13 @@ const sendNotification = (to = '', title = '', body = '') => {
                 'Authorization': process.env.FCM_AUTHORIZATION,
             }
         }
-    ).then(res=>console.log('ketti'))
-        .catch(e=>console.log('ketmadi', e));
+    ).then(() => console.log('ketti'))
+        .catch(e => console.log('ketmadi', e));
 };
 
 router.get('/ali', async function (req, res) {
     try {
-        const user = await User.findOne({username: "Ali"});
+        const user = await User.findOne({username: 'Ali'});
         sendNotification(user.token, `Someone opened your website`, `With device width of px`);
         res.header("Access-Control-Allow-Origin", "*");
         res.json("sent to ali")
@@ -148,7 +148,8 @@ router.post('/chart/line', async function (req, res) {
 });
 router.post('/add/bill', async function (req, res) {
     try {
-        const {sum, reason, date, user, members} = req.body;
+        return res.json({access: true});
+/*        const {sum, reason, date, user, members} = req.body;
         for (const member of members) {
             await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum / members.length)}})
         }
@@ -167,7 +168,7 @@ router.post('/add/bill', async function (req, res) {
         });
         await bill.save();
         res.json({access: true});
-    } catch (e) {
+    */} catch (e) {
         res.status(200).json({message: 'catch error', access: false});
         console.log(e)
     }
