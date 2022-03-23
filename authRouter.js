@@ -3,79 +3,74 @@ const router = new Router();
 const {User, Bill} = require('./models');
 const axios = require('axios');
 
-router.get('/axios', async function (req, res) {
-    try {
-        const hamma = await User.find({});
-        for (userr of hamma) {
-            axios.post('https://fcm.googleapis.com/fcm/send',
-                {
-                    to: userr.token,
-                    priority: "high",
-                    notification: {
-                        title: `Harajatlaringi kiritib qo'y ${userr.username}`,
-                        // body: `Tezroq`
-                    },
-                    data: {
-                        customId: "02",
-                        badge: 1,
-                        sound: "",
-                        alert: "Alert"
-                    }
-                },
-                {
-                    headers: {
-                        'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
-                    }
-                }
-            );
-        }
-        res.json("yubardim hammaga")
-    } catch (e) {
-        console.log(e)
-    }
-});
-router.post('/mne', async function (req, res) {
-    try {
-        const {deviceWidth, website, empty} = req.body;
-        const user = await User.findOne({username: "Ro'shik"});
-        console.log(req.body);
-        axios.post('https://fcm.googleapis.com/fcm/send',
-            {
-                to: user.token,
-                priority: "high",
-                notification: {
-                    // title: `Someone opened 2your dwscwecwewebsite`,
-                    // body: `With device width of 200px`
-                    title: `Someone opened your ${website} website`,
-                    body: `With device width of ${deviceWidth}px`
-                },
-                data: {
-                    customId: "02",
-                    badge: 1,
-                    sound: "",
-                    alert: "Alert"
-                }
+const sendNotification = (to = '', title = '', body = '') => {
+    axios.post('https://fcm.googleapis.com/fcm/send',
+        {
+            to,
+            priority: 'high',
+            notification: {
+                title,
+                body
             },
-            {
-                headers: {
-                    'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
-                }
+            data: {
+                customId: "02",
+                badge: 1,
+                sound: "",
+                alert: "Alert"
             }
-        );
+        },
+        {
+            headers: {
+                'Authorization': process.env.FCM_AUTHORIZATION,
+            }
+        }
+    );
+};
+
+router.get('/ali', async function (req, res) {
+    try {
+        const user = await User.findOne({username: "Ali"});
+        sendNotification(user.token, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
         res.header("Access-Control-Allow-Origin", "*");
-        res.json("sent")
+        res.json("sent to ali")
     } catch (e) {
-        console.log('e')
+        console.log('e');
+        res.json(e)
     }
 });
 
+router.get('/axios', async function (req, res) {
+    try {
+        const everyone = await User.find({});
+        for (user of everyone) {
+            sendNotification(user.token, `Harajatlaringi kiritib qo'y ${user.username}`, '');
+        }
+        res.json('sent to all users')
+    } catch (e) {
+        console.log(e);
+        res.json(e)
+    }
+});
+router.post('/me', async function (req, res) {
+    try {
+        const {deviceWidth, website, empty} = req.body;
+        const user = await User.findOne({username: process.env.MY_NAME});
+        console.log(req.body);
+        sendNotification(user.token, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
+        res.header("Access-Control-Allow-Origin", "*");
+        res.json("sent")
+    } catch (e) {
+        console.log('e');
+        res.json(e)
+    }
+});
 router.get('/get/users', async function (req, res) {
     try {
         const users = await User.find();
         res.json(users)
     } catch (e) {
-        console.log(e)
-
+        console.log(e);
+        res.json(e)
     }
 });
 router.get('/get/bills', async function (req, res) {
@@ -83,8 +78,8 @@ router.get('/get/bills', async function (req, res) {
         const bills = await Bill.find();
         res.json(bills.reverse())
     } catch (e) {
-        console.log(e)
-
+        console.log(e);
+        res.json(e)
     }
 });
 router.post('/chart/pie', async function (req, res) {
@@ -100,11 +95,11 @@ router.post('/chart/pie', async function (req, res) {
                 {
                     $group: {
                         _id: "$user",
-                        summ: {$sum: "$money"},
+                        sum: {$sum: "$money"},
                     }
                 },
                 {
-                    $sort: {summ: 1}
+                    $sort: {sum: 1}
                 }
             ]);
         else
@@ -112,16 +107,17 @@ router.post('/chart/pie', async function (req, res) {
                 {
                     $group: {
                         _id: "$user",
-                        summ: {$sum: "$money"},
+                        sum: {$sum: "$money"},
                     }
                 },
                 {
-                    $sort: {summ: 1}
+                    $sort: {sum: 1}
                 }
             ]);
         res.json(d)
     } catch (e) {
-        console.log(e)
+        console.log(e);
+        res.json(e)
     }
 });
 router.post('/chart/line', async function (req, res) {
@@ -134,7 +130,7 @@ router.post('/chart/line', async function (req, res) {
             {
                 $group: {
                     _id: {$dateToString: {format: "%Y-%m-%d", date: "$date"}},
-                    summ: {$sum: "$money"},
+                    sum: {$sum: "$money"},
                     count: {$sum: 1}
                 }
             },
@@ -144,7 +140,8 @@ router.post('/chart/line', async function (req, res) {
         ]);
         res.json(d)
     } catch (e) {
-        console.log(e)
+        console.log(e);
+        res.json(e)
     }
 });
 router.post('/add/bill', async function (req, res) {
@@ -153,24 +150,10 @@ router.post('/add/bill', async function (req, res) {
         for (const member of members) {
             await User.updateOne({username: member}, {$inc: {bill: Math.floor(sum / members.length)}})
         }
-        const users = await User.find({username: {$in: members}});
-        for (userr of users) {
-            if (user !== userr.username)
-                axios.post('https://fcm.googleapis.com/fcm/send',
-                    {
-                        to: userr.token,
-                        priority: "high",
-                        notification: {
-                            title: `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`,
-                            body: `Sanga (${userr.username}) ${Math.floor(sum / members.length)} so'm yozildi`
-                        }
-                    },
-                    {
-                        headers: {
-                            'Authorization': 'Bearer AAAAviYoMXU:APA91bGWbMT_nc0Tfc3U_3WEiS_UQFmu1iRj4RBh0nB2e83KucIikbx4tLRLOknJORmECqGS_FpZbOdSOay0Q6RT8i4zLm3BCTyNHauWV7tI39KREbFkRP_3Kws4cwoysXpoNp4p-qvY',
-                        }
-                    }
-                );
+        const everyone = await User.find({username: {$in: members}});
+        for (one of everyone) {
+            if (user !== one.username)
+                sendNotification(one.token, `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`, `Sanga (${one.username}) ${Math.floor(sum / members.length)} so'm yozildi`)
         }
         await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
@@ -181,9 +164,9 @@ router.post('/add/bill', async function (req, res) {
             reason
         });
         await bill.save();
-        res.json({accsess: true});
+        res.json({access: true});
     } catch (e) {
-        res.status(200).json({message: 'catch error', accsess: false});
+        res.status(200).json({message: 'catch error', access: false});
         console.log(e)
     }
 });
@@ -191,10 +174,10 @@ router.post('/set/token', async function (req, res) {
     const {_id, token} = req.body;
     const user = await User.findOne({_id});
     if (!user) {
-        return res.json({accsess: false})
+        return res.json({access: false})
     } else {
         await User.updateOne({_id}, {token});
-        return res.json({accsess: true})
+        return res.json({access: true})
     }
 });
 router.post('/login', async function (req, res) {
@@ -203,15 +186,15 @@ router.post('/login', async function (req, res) {
         console.log(username, password);
         const user = await User.findOne({username});
         if (!user) {
-            return res.status(200).json({message: "bunday odam yo'q", accsess: false, user: {}})
+            return res.status(200).json({message: 'Bunday foydalanuvchi mavjud emas', access: false, user: {}})
         }
         if (password !== user.password) {
-            return res.status(201).json({message: 'parol xata', accsess: false, user: {}})
+            return res.status(201).json({message: 'Noto\'g\'ri parol', access: false, user: {}})
         }
-        return res.status(202).json({message: '', user: user, accsess: true})
+        return res.status(202).json({message: '', user: user, access: true})
     } catch (e) {
-        console.log(e)
+        console.log(e);
+        res.status(500).json({message: 'login error', access: false})
     }
-    res.status(500).json({message: 'login'})
 });
 module.exports = router;
