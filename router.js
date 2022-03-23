@@ -149,6 +149,9 @@ router.post('/chart/line', async function (req, res) {
 router.post('/add/bill', async function (req, res) {
     try {
         const {sum, reason, date, user, members} = req.body;
+        if (!/^0$|^-?[1-9]\d*(\.\d+)?$/.test(sum)) {
+            return res.json({message: "To'g'ri son kitiring", access: false})
+        }
         for (const member of members) {
             await User.updateOne({username: member}, {$inc: {bill: Math.floor(parseInt(sum) / members.length)}})
         }
