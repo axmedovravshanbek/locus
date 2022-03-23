@@ -4,6 +4,7 @@ const {User, Bill} = require('./models');
 const axios = require('axios');
 
 const sendNotification = (to = '', title = '', body = '') => {
+    console.log(title, to, body);
     axios.post('https://fcm.googleapis.com/fcm/send',
         {
             to,
@@ -24,17 +25,18 @@ const sendNotification = (to = '', title = '', body = '') => {
                 'Authorization': process.env.FCM_AUTHORIZATION,
             }
         }
-    );
+    ).then(res=>console.log('ketti'))
+        .catch(e=>console.log('ketmadi', e));
 };
 
 router.get('/ali', async function (req, res) {
     try {
         const user = await User.findOne({username: "Ali"});
-        sendNotification(user.token, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
+        sendNotification(user.token, `Someone opened your website`, `With device width of px`);
         res.header("Access-Control-Allow-Origin", "*");
         res.json("sent to ali")
     } catch (e) {
-        console.log('e');
+        console.log('e', e);
         res.json(e)
     }
 });
