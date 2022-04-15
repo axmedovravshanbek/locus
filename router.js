@@ -25,7 +25,8 @@ const sendNotification = (to = '', title = '', body = '') => {
                 'Authorization': process.env.FCM_AUTHORIZATION,
             }
         }
-    ).then(() => console.log('ketti'))
+    )
+        .then(() => console.log('ketti'))
         .catch(e => console.log('ketmadi', e));
 };
 
@@ -152,15 +153,25 @@ router.post('/add/bill', async function (req, res) {
         if (!/^0$|^-?[1-9]\d*(\.\d+)?$/.test(sum)) {
             return res.json({message: "To'g'ri son kitiring", access: false})
         }
-        for (const member of members) {
-            await User.updateOne({username: member}, {$inc: {bill: Math.floor(parseInt(sum) / members.length)}})
-        }
+        await User.bulkWrite([
+            {
+                updateMany: {
+                    filter: {username: {$in: members}},
+                    update: {$inc: {bill: Math.floor(parseInt(sum) / members.length)}}
+                }
+            },
+            {
+                updateOne: {
+                    filter: {username: user},
+                    update: {$inc: {bill: -sum}}
+                }
+            },
+        ]);
         const everyone = await User.find({username: {$in: members}});
         for (one of everyone) {
             if (user !== one.username)
                 sendNotification(one.token, `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`, `Sanga (${one.username}) ${Math.floor(sum / members.length)} so'm yozildi`)
         }
-        await User.updateOne({username: user}, {$inc: {bill: -sum}});
         const bill = Bill({
             user,
             money: sum,
