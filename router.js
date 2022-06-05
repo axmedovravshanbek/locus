@@ -3,11 +3,10 @@ const router = new Router();
 const {User, Bill} = require('./models');
 const axios = require('axios');
 
-const sendNotification = (to = '', title = '', body = '') => {
-    console.log(title, to, body);
+const sendNotification = (user, title = '', body = '') => {
     axios.post('https://fcm.googleapis.com/fcm/send',
         {
-            to,
+            to: user.token,
             priority: 'high',
             notification: {
                 title,
@@ -28,12 +27,20 @@ const sendNotification = (to = '', title = '', body = '') => {
     )
         .then(() => console.log('ketti'))
         .catch(e => console.log('ketmadi', e));
+    axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
+        {
+            chat_id: user.tgId,
+            text: `${title} ${body}`
+        }
+    )
+        .then(() => console.log('botga ketti'))
+        .catch(e => console.log('botga ketmadi', e));
 };
 
 router.get('/ali', async function (req, res) {
     try {
         const user = await User.findOne({username: 'Ali'});
-        sendNotification(user.token, `Someone opened your website`, `With device width of px`);
+        sendNotification(user, `Someone opened your website`, `With device width of px`);
         res.header("Access-Control-Allow-Origin", "*");
         res.json("sent to ali")
     } catch (e) {
@@ -59,7 +66,7 @@ router.post('/me', async function (req, res) {
         const {deviceWidth, website, empty} = req.body;
         const user = await User.findOne({username: process.env.MY_NAME});
         console.log(req.body);
-        sendNotification(user.token, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
+        sendNotification(user, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
         res.header("Access-Control-Allow-Origin", "*");
         res.json("sent")
     } catch (e) {
@@ -170,7 +177,7 @@ router.post('/add/bill', async function (req, res) {
         const everyone = await User.find({username: {$in: members}});
         for (one of everyone) {
             if (user !== one.username)
-                sendNotification(one.token, `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`, `Sanga (${one.username}) ${Math.floor(sum / members.length)} so'm yozildi`)
+                sendNotification(one, `${user} ${reason}ga ${sum} so'm ishlatdi. ${members.length} odamga`, `Sanga (${one.username}) ${Math.floor(sum / members.length)} so'm yozildi`)
         }
         const bill = Bill({
             user,

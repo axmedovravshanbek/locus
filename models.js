@@ -4,7 +4,8 @@ const User = new Schema({
     password: {type: String, required: true},
     image: {type: String, default: 'https://schoolsw3.com/howto/img_avatar.png'},
     bill: {type: Number, default: 0},
-    token:{type:String, default:''}
+    token: {type: String, default: ''},
+    tgId: {type: String, default: ''}
 });
 const Bill = new Schema({
     user: {type: String},
