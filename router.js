@@ -65,7 +65,6 @@ router.post('/me', async function (req, res) {
     try {
         const {deviceWidth, website, empty} = req.body;
         const user = await User.findOne({username: process.env.MY_NAME});
-        console.log(req.body);
         sendNotification(user, `Someone opened your ${website} website`, `With device width of ${deviceWidth}px`);
         res.header("Access-Control-Allow-Origin", "*");
         res.json("sent")
@@ -76,8 +75,9 @@ router.post('/me', async function (req, res) {
 });
 router.get('/get/users', async function (req, res) {
     try {
-        const users = await User.find();
-        res.json(users)
+        const users = await User.find({}, {tgId:0});
+        console.log(users[0])
+        // res.json(users)
     } catch (e) {
         console.log(e);
         res.json(e)
