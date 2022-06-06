@@ -76,8 +76,8 @@ router.post('/me', async function (req, res) {
 router.get('/get/users', async function (req, res) {
     try {
         const users = await User.find({}, {tgId:0});
-        console.log(users[0])
-        // res.json(users)
+        // console.log(users[0])
+        res.json(users)
     } catch (e) {
         console.log(e);
         res.json(e)
