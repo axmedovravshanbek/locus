@@ -195,7 +195,7 @@ router.post('/add/bill', async function (req, res) {
 });
 router.post('/set/token', async function (req, res) {
     const {_id, token} = req.body;
-    const user = await User.findOne({_id});
+    const user = await User.findOne({_id}, {tgId: 0});
     if (!user) {
         return res.json({access: false})
     } else {
