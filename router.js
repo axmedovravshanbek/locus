@@ -6,7 +6,7 @@ const axios = require('axios');
 const sendNotification = (user, title = '', body = '') => {
     axios.post('https://fcm.googleapis.com/fcm/send',
         {
-            to:user.token,
+            to: user.token,
             priority: 'high',
             notification: {
                 title,
@@ -76,7 +76,7 @@ router.post('/me', async function (req, res) {
 });
 router.get('/get/users', async function (req, res) {
     try {
-        const users = await User.find();
+        const users = await User.find({}, {tgId: 0});
         res.json(users)
     } catch (e) {
         console.log(e);
@@ -206,8 +206,7 @@ router.post('/set/token', async function (req, res) {
 router.post('/login', async function (req, res) {
     try {
         const {username, password} = req.body;
-        console.log(username, password);
-        const user = await User.findOne({username});
+        const user = await User.findOne({username}, {tgId: 0});
         if (!user) {
             return res.status(200).json({message: 'Bunday foydalanuvchi mavjud emas', access: false, user: {}})
         }
